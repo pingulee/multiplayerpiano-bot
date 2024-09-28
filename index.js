@@ -10,6 +10,14 @@ const OwnerId = process.env.OWNER_ID;
 
 const client = new Client("wss://mppclone.com", MPPNET_TOKEN);
 
+// 방 설정
+const channelSettings = {
+  visible: true,
+  limit: 50,
+  chat: true,
+  crownsolo: false,
+};
+
 // 방 생성/접속
 function createChannel(channelName, settings) {
   client.start();
@@ -18,14 +26,6 @@ function createChannel(channelName, settings) {
 }
 
 createChannel("한국방", channelSettings);
-
-// 방 설정
-const channelSettings = {
-  visible: true,
-  limit: 50,
-  chat: true,
-  crownsolo: false,
-};
 
 // 1시간마다 새로운 방을 생성/접속
 function scheduleChannelCreation() {

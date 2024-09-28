@@ -1,9 +1,6 @@
 import { Client } from "mpp-client-net";
-import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
-
-dotenv.config();
 
 const MPPNET_TOKEN = process.env.MPPNET_TOKEN;
 const OwnerId = process.env.OWNER_ID;

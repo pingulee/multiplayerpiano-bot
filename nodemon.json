@@ -1,5 +1,6 @@
 {
-    "watch": ["src"],
-    "ext": "ts",
-    "exec": "ts-node ./src/index.ts"
-  }
+  "watch": ["src"],
+  "ext": "js,json",
+  "exec": "node src/index.js",
+  "ignore": ["node_modules", "data/chatlog.json"]
+}

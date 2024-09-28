@@ -27,29 +27,36 @@ function createChannel(channelName, settings) {
 
 // 채팅 내용을 파일에 저장하는 함수
 function saveChatToFile(username, message) {
-  const timestamp = new Date();
-  const formattedDate = timestamp.toISOString().split('T')[0]; // 날짜 (YYYY-MM-DD)
-  const formattedTime = timestamp.toTimeString().split(' ')[0]; // 시간 (HH:MM:SS)
+  try {
+    const timestamp = new Date();
+    const formattedDate = timestamp.toISOString().split('T')[0]; // 날짜 (YYYY-MM-DD)
+    const formattedTime = timestamp.toTimeString().split(' ')[0]; // 시간 (HH:MM:SS)
 
-  const chatLog = {
-    date: formattedDate,
-    time: formattedTime,
-    username: username,
-    message: message
-  };
+    const chatLog = {
+      date: formattedDate,
+      time: formattedTime,
+      username: username,
+      message: message,
+    };
 
-  // 파일 경로 지정
-  const filePath = path.join(__dirname, 'chatlog.json');
+    // 파일 경로 지정
+    const filePath = path.join(__dirname, 'chatlog.json');
+    console.log(`파일 경로: ${filePath}`); // 디버그 로그
 
-  // 파일이 이미 존재하는지 확인
-  if (fs.existsSync(filePath)) {
-    // 파일이 존재하면 기존 내용을 읽어서 추가
-    const existingData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-    existingData.push(chatLog);
-    fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2));
-  } else {
-    // 파일이 없으면 새로 생성
-    fs.writeFileSync(filePath, JSON.stringify([chatLog], null, 2));
+    // 파일이 이미 존재하는지 확인
+    if (fs.existsSync(filePath)) {
+      console.log('기존 파일에 기록을 추가합니다.'); // 디버그 로그
+      // 파일이 존재하면 기존 내용을 읽어서 추가
+      const existingData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      existingData.push(chatLog);
+      fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2));
+    } else {
+      console.log('새로운 파일을 생성합니다.'); // 디버그 로그
+      // 파일이 없으면 새로 생성
+      fs.writeFileSync(filePath, JSON.stringify([chatLog], null, 2));
+    }
+  } catch (error) {
+    console.error('채팅 기록을 파일에 저장하는 중 에러 발생:', error); // 에러 로그
   }
 }
 
@@ -57,6 +64,7 @@ function saveChatToFile(username, message) {
 client.on("a", (msg) => {
   const username = msg.p.name; // 유저 이름
   const message = msg.a; // 채팅 메시지
+  console.log(`채팅 수신 - 유저: ${username}, 메시지: ${message}`); // 디버그 로그
   saveChatToFile(username, message); // 파일에 채팅 기록 저장
 });
 

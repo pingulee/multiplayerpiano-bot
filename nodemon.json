@@ -1,7 +1,5 @@
 {
-  "watch": ["src"],
-  "ext": "ts",
-  "ignore": ["node_modules", "data"],
-  "exec": "node --loader ts-node/esm ./src/index.ts"
-}
-
+    "watch": ["src"],
+    "ext": "ts",
+    "exec": "ts-node ./src/index.ts"
+  }

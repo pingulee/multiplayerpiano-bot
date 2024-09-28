@@ -76,6 +76,32 @@ function kickUser(userId, reason) {
   client.sendMessageToCurrentChannel(`유저 ${userId}가 퇴장되었습니다. 사유: ${reason}`);
 }
 
+// 왕관을 가져왔을 때, 상시로 블랙리스트 유저를 확인하여 퇴장시키는 함수
+function monitorBlacklistUsers() {
+  const blacklist = loadBlacklist(); // 블랙리스트 로드
+
+  const interval = setInterval(() => {
+    if (!client.channel || !client.channel.crown || client.channel.crown.userId !== client.participantId) {
+      console.log("왕관을 잃었습니다. 감시를 중단합니다.");
+      clearInterval(interval); // 왕관을 잃으면 감시를 중단
+      return;
+    }
+
+    console.log("왕관 보유 중, 블랙리스트 유저 감시 중...");
+
+    // 현재 방에 있는 모든 참가자와 블랙리스트를 비교
+    const participants = Object.values(client.ppl);
+    participants.forEach((participant) => {
+      const userId = participant.id;
+      const blacklistedUser = blacklist.find((user) => user.nickname === userId);
+
+      if (blacklistedUser) {
+        kickUser(userId, blacklistedUser.reason); // 블랙리스트에 있으면 즉시 퇴장
+      }
+    });
+  }, 5000); // 5초마다 블랙리스트 감시 및 퇴장 시도
+}
+
 // 모든 유저 채팅 기록
 client.on("a", (msg) => {
   const username = msg.p.name; // 유저 이름
@@ -83,21 +109,14 @@ client.on("a", (msg) => {
   saveChatToFile(username, message); // 파일에 채팅 기록
 });
 
-// 방 접속 후 블랙리스트 유저 퇴장
+// 방 접속 후 왕관을 가지고 있을 때 블랙리스트 유저 감시 시작
 client.on("hi", () => {
   console.log("방 생성/접속 성공");
   client.setNameAndColor("👁️🐽👁️", "#ff8687");
-  client.checkAndTakeCrownUntilSuccess();
 
-  const blacklist = loadBlacklist(); // 블랙리스트 로드
-
-  client.on("p", (participant) => {
-    const userId = participant.id; // 접속한 유저 ID
-    const blacklistedUser = blacklist.find((user) => user.nickname === userId);
-
-    if (blacklistedUser) {
-      kickUser(userId, blacklistedUser.reason); // 블랙리스트에 있으면 퇴장
-    }
+  // 왕관을 얻을 때까지 기다리고, 왕관을 얻으면 감시 시작
+  client.checkAndTakeCrownUntilSuccess(() => {
+    monitorBlacklistUsers(); // 왕관을 가지고 있으면 상시로 블랙리스트 감시 시작
   });
 });
 

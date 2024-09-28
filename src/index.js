@@ -5,7 +5,7 @@ import OpenAI from "openai";
 
 const MPPNET_TOKEN = process.env.MPPNET_TOKEN;
 const OwnerId = process.env.OWNER_ID;
-const openai = new OpenAI();
+// const openai = new OpenAI();
 
 const client = new Client("wss://mppclone.com", MPPNET_TOKEN);
 

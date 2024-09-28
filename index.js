@@ -1,5 +1,4 @@
 import { Client } from "mpp-client-net";
-import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { OpenAIApi } from "openai";
@@ -8,6 +7,7 @@ dotenv.config();
 
 const MPPNET_TOKEN = process.env.MPPNET_TOKEN;
 const OwnerId = process.env.OWNER_ID;
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const client = new Client("wss://mppclone.com", MPPNET_TOKEN);
 
@@ -38,7 +38,7 @@ function saveChatToFile(userId, message, timestamp) {
   // 새로운 채팅 기록 추가
   chatLogs[userId].push({
     timestamp: timestamp,
-    message: message
+    message: message,
   });
 
   // 변경된 채팅 로그를 파일에 다시 저장
@@ -47,10 +47,10 @@ function saveChatToFile(userId, message, timestamp) {
 
 // 유저가 채팅할 때마다 발생하는 이벤트 (실시간 채팅만 기록)
 client.on("a", (msg) => {
-  const userId = msg.p.id;  // 유저 ID
-  const message = msg.a;    // 채팅 메시지
+  const userId = msg.p.id; // 유저 ID
+  const message = msg.a; // 채팅 메시지
   const timestamp = new Date().toISOString(); // 현재 시간
-  saveChatToFile(userId, message, timestamp);  // 파일에 채팅 기록 저장
+  saveChatToFile(userId, message, timestamp); // 파일에 채팅 기록 저장
 });
 
 // 클라이언트 접속 후 이름과 색깔 설정 및 왕관 체크

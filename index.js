@@ -44,33 +44,7 @@ function saveChatToFile(userId, message, timestamp) {
   fs.writeFileSync(chatLogPath, JSON.stringify(chatLogs, null, 2), "utf-8");
 }
 
-// 유저의 모든 대화를 저장하는 함수
-function saveAllPreviousChats(participants) {
-  participants.forEach(participant => {
-    const userId = participant._id;
-    const messages = participant.messages || [];
-    messages.forEach(message => {
-      const timestamp = new Date().toISOString();
-      saveChatToFile(userId, message, timestamp);
-    });
-  });
-}
-
-// 방 생성/접속
-function createChannel(channelName, settings) {
-  client.start();
-  client.setChannel(channelName, settings);
-  console.log(channelName);
-}
-
-// 이전 대화 기록 가져오기
-client.on("ch", (msg) => {
-  if (msg.ppl) {
-    saveAllPreviousChats(msg.ppl);
-  }
-});
-
-// 유저가 채팅할 때마다 발생하는 이벤트
+// 유저가 채팅할 때마다 발생하는 이벤트 (실시간 채팅만 기록)
 client.on("a", (msg) => {
   const userId = msg.p.id;  // 유저 ID
   const message = msg.a;    // 채팅 메시지
@@ -85,9 +59,16 @@ client.on("hi", () => {
   client.checkAndTakeCrownUntilSuccess();
 });
 
+// 방 생성/접속
+function createChannel(channelName, settings) {
+  client.start();
+  client.setChannel(channelName, settings);
+  console.log(channelName);
+}
+
 // 방 생성 및 10분마다 새로 방을 생성
 createChannel("한국방", channelSettings);
 setInterval(() => {
   createChannel("한국방", channelSettings);
   console.log("방 생성 새로고침");
-}, 600000);
+}, 600000); // 10분마다 방 새로 생성

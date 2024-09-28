@@ -1,17 +1,15 @@
-import { Client } from "mpp-client-net";
-import dotenv from "dotenv";
-import fs from "fs";
-import path from "path";
-
-// OpenAI 라이브러리를 ESM 방식으로 불러옴
-import { Configuration, OpenAIApi } from "openai";
+const { Client } = require("mpp-client-net");
+const dotenv = require("dotenv");
+const fs = require("fs");
+const path = require("path");
+const { Configuration, OpenAIApi } = require("openai");
 
 dotenv.config();
 
 // OpenAI API 설정
 const openai = new OpenAIApi(
   new Configuration({
-    apiKey: process.env.OPENAI_API_KEY, // OpenAI API 키 설정 (dotenv 파일에 저장된 키 사용)
+    apiKey: process.env.OPENAI_API_KEY, // OpenAI API 키 설정
   })
 );
 
@@ -108,7 +106,7 @@ client.on("a", (msg) => {
 // 클라이언트 접속 후 이름과 색깔 설정 및 왕관 체크
 client.on("hi", () => {
   console.log("방 생성/접속 성공");
-  client.setNameAndColor("🐖", "#ff8687");
+  client.setNameAndColor("👁️🐽👁️", "#ff8687");
   client.checkAndTakeCrownUntilSuccess();
 });
 

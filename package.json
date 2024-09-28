@@ -5,6 +5,5 @@
     "midi-player-js": "^2.0.16",
     "mpp-client-net": "^1.2.3",
     "openai": "^4.65.0"
-  },
-  "type": "module"
+  }
 }

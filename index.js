@@ -17,7 +17,7 @@ function createChannel(channelName, settings) {
   console.log(channelName);
 }
 
-createChannel();
+createChannel("한국방", channelSettings);
 
 // 방 설정
 const channelSettings = {

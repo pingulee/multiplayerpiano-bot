@@ -1,5 +1,7 @@
 import { Client } from "mpp-client-net";
 import dotenv from "dotenv";
+import fs from "fs"; // 파일 시스템 모듈 추가
+import path from "path"; // 경로 처리 모듈 추가
 
 dotenv.config();
 
@@ -67,6 +69,30 @@ Client.prototype.setNameAndColor = function (name, color) {
     },
   ]);
 };
+
+// 채팅 데이터를 파일에 저장하는 함수
+function saveChatToFile(username, message) {
+  const currentDate = new Date().toISOString().split("T")[0]; // 현재 날짜 (YYYY-MM-DD 형식)
+  const fileName = `chat_${currentDate}.txt`; // 날짜별 파일 이름
+  const filePath = path.join(__dirname, fileName); // 파일 경로 설정
+
+  const logMessage = `[${new Date().toLocaleTimeString()}] ${username}: ${message}\n`;
+
+  fs.appendFile(filePath, logMessage, (err) => {
+    if (err) {
+      console.error("채팅을 파일에 저장하는 중 오류 발생:", err);
+    } else {
+      console.log("채팅이 파일에 저장되었습니다:", logMessage.trim());
+    }
+  });
+}
+
+// 모든 유저의 채팅을 기록
+client.on("a", (msg) => {
+  const username = msg.p.name; // 유저 이름
+  const message = msg.a; // 채팅 메시지
+  saveChatToFile(username, message); // 파일에 채팅 기록
+});
 
 // 방 접속
 client.on("hi", () => {

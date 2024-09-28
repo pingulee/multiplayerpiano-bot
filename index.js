@@ -17,6 +17,8 @@ function createChannel(channelName, settings) {
   console.log(channelName);
 }
 
+createChannel();
+
 // 방 설정
 const channelSettings = {
   visible: true,
@@ -84,7 +86,6 @@ function saveChatToFile(username, message) {
   });
 }
 
-createChannel();
 scheduleChannelCreation();
 
 // 모든 유저의 채팅을 기록

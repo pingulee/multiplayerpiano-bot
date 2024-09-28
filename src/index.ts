@@ -6,7 +6,7 @@ import OpenAI from "openai";
 // 환경변수 타입 정의
 const MPPNET_TOKEN: string = process.env.MPPNET_TOKEN || "";
 const OwnerId: string = process.env.OWNER_ID || "";
-const openai = new OpenAI();
+// const openai = new OpenAI();
 
 const client: any = new Client("wss://mppclone.com", MPPNET_TOKEN);
 
@@ -32,7 +32,11 @@ interface ChatLog {
 }
 
 // 채팅을 파일에 저장하는 함수 (유저 ID별로 정리)
-function saveChatToFile(userId: string, message: string, timestamp: string): void {
+function saveChatToFile(
+  userId: string,
+  message: string,
+  timestamp: string,
+): void {
   const chatLogPath = path.resolve("data/chatlog.json");
 
   // 기존 채팅 로그 파일이 있으면 불러옴, 없으면 빈 객체 생성

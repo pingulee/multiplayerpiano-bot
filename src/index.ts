@@ -76,6 +76,22 @@ client.on("hi", () => {
   client.checkAndTakeCrownUntilSuccess();
 });
 
+// 연결 성공 여부 확인
+client.on('connect', () => {
+  console.log('WebSocket 연결 성공');
+  createChannel('한국방', channelSettings); // 연결 후 방 생성
+});
+
+// 채널 생성 정보 확인
+client.on('ch', (channelInfo: any) => {
+  console.log('채널 정보:', channelInfo);
+});
+
+// 연결 오류 확인
+client.on('error', (error: any) => {
+  console.error('WebSocket 연결 오류:', error);
+});
+
 // 방 생성/접속
 function createChannel(channelName: string, settings: ChannelSettings): void {
   client.start();
@@ -84,7 +100,6 @@ function createChannel(channelName: string, settings: ChannelSettings): void {
 }
 
 // 방 생성 및 10분마다 새로 방을 생성
-createChannel("한국방", channelSettings);
 setInterval(() => {
   createChannel("한국방", channelSettings);
   console.log("방 생성 새로고침");

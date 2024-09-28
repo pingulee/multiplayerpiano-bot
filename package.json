@@ -3,7 +3,8 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "midi-player-js": "^2.0.16",
-    "mpp-client-net": "^1.2.3"
+    "mpp-client-net": "^1.2.3",
+    "openai": "^4.65.0"
   },
   "type": "module"
 }

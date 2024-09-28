@@ -1,0 +1,12 @@
+{
+  "blacklist": [
+    {
+      "nickname": "8287a735a0f85561554ed42e",
+      "reason": "test"
+    },
+    {
+      "nickname": "b898aae28da653b4ae236840",
+      "reason": "test"
+    }
+  ]
+}

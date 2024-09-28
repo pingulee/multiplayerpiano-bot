@@ -14,7 +14,7 @@ const client = new Client("wss://mppclone.com", MPPNET_TOKEN);
 function createChannel(channelName, settings) {
   client.start();
   client.setChannel(channelName, settings);
-  console.log(`방 '${channelName}'생성/접속 완료.`);
+  process.stdout.write(channelName);
 }
 
 // 방 설정
@@ -25,8 +25,12 @@ const channelSettings = {
   crownsolo: false,
 };
 
-// 방 생성/접속
-createChannel("한국방", channelSettings);
+// 1시간마다 새로운 방을 생성/접속
+function scheduleChannelCreation() {
+  setInterval(() => {
+    createChannel("한국방", channelSettings);
+  }, 3600000);
+}
 
 // 왕관 가져오기
 Client.prototype.takeCrown = function () {
@@ -37,13 +41,6 @@ Client.prototype.takeCrown = function () {
     },
   ]);
 };
-
-// 1시간마다 새로운 방을 생성
-function scheduleChannelCreation() {
-  setInterval(() => {
-    createChannel("한국방", channelSettings);
-  }, 3600000);
-}
 
 // 왕관 상태를 체크하고 없으면 계속 시도
 Client.prototype.checkAndTakeCrownUntilSuccess = function () {
@@ -87,6 +84,8 @@ function saveChatToFile(username, message) {
   });
 }
 
+scheduleChannelCreation();
+
 // 모든 유저의 채팅을 기록
 client.on("a", (msg) => {
   const username = msg.p.name; // 유저 이름
@@ -96,9 +95,7 @@ client.on("a", (msg) => {
 
 // 방 접속
 client.on("hi", () => {
-  console.log("방 접속 성공");
+  console.log("방 생성/접속 성공");
   client.setNameAndColor("👁️🐽👁️", "#ff8687");
   client.checkAndTakeCrownUntilSuccess();
-
-  scheduleChannelCreation();
 });

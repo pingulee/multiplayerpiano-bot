@@ -1,6 +1,5 @@
 {
   "watch": ["src"],
   "ext": "js,json",
-  "exec": "node index.js",
-  "ignore": ["node_modules", "data/chatlog.json"]
+  "exec": "node src/index.js"
 }

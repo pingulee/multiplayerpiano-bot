@@ -1,13 +1,16 @@
 {
   "dependencies": {
     "date-fns": "^4.1.0",
+    "dotenv": "^16.4.5",
     "midi-player-js": "^2.0.16",
     "mpp-client-net": "^1.2.3",
     "openai": "^4.65.0"
   },
   "type": "module",
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "@types/node": "^22.7.4",
+    "nodemon": "^3.1.7",
+    "typescript": "^5.6.2"
   },
   "scripts": {
     "start": "nodemon"

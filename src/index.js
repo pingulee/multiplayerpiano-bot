@@ -2,7 +2,6 @@ import { Client } from "mpp-client-net";
 import fs from "fs";
 import path from "path";
 
-
 const MPPNET_TOKEN = process.env.MPPNET_TOKEN;
 const OwnerId = process.env.OWNER_ID;
 
@@ -65,8 +64,8 @@ function createChannel(channelName, settings) {
 }
 
 // 방 생성 및 10분마다 새로 방을 생성
-createChannel("test", channelSettings);
+createChannel("한국방", channelSettings);
 setInterval(() => {
-  createChannel("test", channelSettings);
+  createChannel("한국방", channelSettings);
   console.log("방 생성 새로고침");
 }, 600000);

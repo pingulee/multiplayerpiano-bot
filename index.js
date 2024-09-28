@@ -14,7 +14,7 @@ const client = new Client("wss://mppclone.com", MPPNET_TOKEN);
 function createChannel(channelName, settings) {
   client.start();
   client.setChannel(channelName, settings);
-  process.stdout.write(channelName);
+  console.log(channelName);
 }
 
 // 방 설정

@@ -3,8 +3,6 @@ import fs from "fs";
 import path from "path";
 import OpenAI from "openai";
 
-dotenv.config();
-
 const MPPNET_TOKEN = process.env.MPPNET_TOKEN;
 const OwnerId = process.env.OWNER_ID;
 const openai = new OpenAI();

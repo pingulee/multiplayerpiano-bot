@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 
-// OpenAI 라이브러리를 require로 불러옴
-const { Configuration, OpenAIApi } = require("openai");
+// OpenAI 라이브러리를 ESM 방식으로 불러옴
+import { Configuration, OpenAIApi } from "openai";
 
 dotenv.config();
 
@@ -108,7 +108,7 @@ client.on("a", (msg) => {
 // 클라이언트 접속 후 이름과 색깔 설정 및 왕관 체크
 client.on("hi", () => {
   console.log("방 생성/접속 성공");
-  client.setNameAndColor("👁️🐽👁️", "#ff8687");
+  client.setNameAndColor("🐖", "#ff8687");
   client.checkAndTakeCrownUntilSuccess();
 });
 

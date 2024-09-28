@@ -18,12 +18,29 @@ const channelSettings = {
   crownsolo: false,
 };
 
+// 블랙리스트 로드 함수
+function loadBlacklist() {
+  const blacklistPath = path.join(__dirname, "blacklist");
+  if (fs.existsSync(blacklistPath)) {
+    const blacklistData = fs.readFileSync(blacklistPath, "utf-8");
+    return blacklistData.split("\n").map((id) => id.trim()).filter(Boolean); // 엔터로 구분, 공백 제거
+  } else {
+    console.error("블랙리스트 파일이 존재하지 않습니다.");
+    return [];
+  }
+}
+
+// 블랙리스트 파일에서 블랙리스트 유저 ID 읽기
+const blacklist = loadBlacklist();
+
 // 방 생성/접속
 function createChannel(channelName, settings) {
   client.start();
   client.setChannel(channelName, settings);
   console.log(channelName);
 }
+
+createChannel("한국방", channelSettings);
 
 // 1시간마다 새로운 방을 생성/접속
 function scheduleChannelCreation() {
@@ -32,23 +49,6 @@ function scheduleChannelCreation() {
     console.log("방 생성 새로고침");
   }, 3600000);
 }
-
-// 채팅 데이터를 파일에 저장하는 함수
-function saveChatToFile(username, message) {
-    const currentDate = new Date().toISOString().split("T")[0]; // 현재 날짜 (YYYY-MM-DD 형식)
-    const fileName = `chat_${currentDate}.txt`; // 날짜별 파일 이름
-    const filePath = path.join(__dirname, fileName); // 파일 경로 설정
-  
-    const logMessage = `[${new Date().toLocaleTimeString()}] ${username}: ${message}\n`;
-  
-    fs.appendFile(filePath, logMessage, (err) => {
-      if (err) {
-        console.error("채팅을 파일에 저장하는 중 오류 발생:", err);
-      } else {
-        console.log("채팅이 파일에 저장되었습니다:", logMessage.trim());
-      }
-    });
-  }
 
 // 왕관 가져오기
 Client.prototype.takeCrown = function () {
@@ -85,23 +85,54 @@ Client.prototype.setNameAndColor = function (name, color) {
   ]);
 };
 
-createChannel("한국방", channelSettings);
+// 채팅 데이터를 파일에 저장하는 함수
+function saveChatToFile(username, message) {
+  const currentDate = new Date().toISOString().split("T")[0]; // 현재 날짜 (YYYY-MM-DD 형식)
+  const fileName = `chat_${currentDate}.txt`; // 날짜별 파일 이름
+  const filePath = path.join(__dirname, fileName); // 파일 경로 설정
+
+  const logMessage = `[${new Date().toLocaleTimeString()}] ${username}: ${message}\n`;
+
+  fs.appendFile(filePath, logMessage, (err) => {
+    if (err) {
+      console.error("채팅을 파일에 저장하는 중 오류 발생:", err);
+    } else {
+      console.log("채팅이 파일에 저장되었습니다:", logMessage.trim());
+    }
+  });
+}
+
 scheduleChannelCreation();
 
-// 모든 유저의 채팅을 기록하고, banlist에 있는 유저를 확인
+// 블랙리스트 유저가 방에 있으면 퇴장시키는 함수
+function kickBlacklistUser(userId) {
+  if (blacklist.includes(userId)) {
+    client.sendArray([
+      {
+        m: "kickban",
+        id: userId,
+        ms: 0, // 0분 퇴장
+      },
+    ]);
+    console.log(`블랙리스트 유저 ${userId}를 퇴장시켰습니다.`);
+  }
+}
+
+// 모든 유저의 채팅을 기록
 client.on("a", (msg) => {
-    const username = msg.p.name; // 유저 이름
-    const userId = msg.p._id; // 유저 ID
-    const message = msg.a; // 채팅 메시지
-  
-    // banlist에 해당 유저가 있는지 확인하고 퇴장시킴
-    if (banlist.includes(username)) {
-      console.log(`${username}이(가) banlist에 있으므로 퇴장시킵니다.`);
-      client.kickUser(userId);
-    }
-  
-    saveChatToFile(username, message); // 파일에 채팅 기록
-  });
+  const username = msg.p.name; // 유저 이름
+  const message = msg.a; // 채팅 메시지
+  saveChatToFile(username, message); // 파일에 채팅 기록
+});
+
+// 방에 새로운 유저가 접속할 때
+client.on("participant added", (participant) => {
+  const userId = participant._id; // 유저 ID
+  console.log(`유저가 방에 접속했습니다: ${userId}`);
+
+  // 블랙리스트에 있는지 확인하고 퇴장
+  kickBlacklistUser(userId);
+});
 
 // 방 접속
 client.on("hi", () => {

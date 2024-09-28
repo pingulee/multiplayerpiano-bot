@@ -2,14 +2,18 @@ import { Client } from "mpp-client-net";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
-import { Configuration, OpenAIApi } from "openai";
+
+// OpenAI 라이브러리를 require로 불러옴
+const { Configuration, OpenAIApi } = require("openai");
 
 dotenv.config();
 
 // OpenAI API 설정
-const openai = new OpenAIApi(new Configuration({
-  apiKey: process.env.OPENAI_API_KEY, // OpenAI API 키 설정 (dotenv 파일에 저장된 키 사용)
-}));
+const openai = new OpenAIApi(
+  new Configuration({
+    apiKey: process.env.OPENAI_API_KEY, // OpenAI API 키 설정 (dotenv 파일에 저장된 키 사용)
+  })
+);
 
 const MPPNET_TOKEN = process.env.MPPNET_TOKEN;
 const OwnerId = process.env.OWNER_ID;
@@ -46,7 +50,7 @@ function saveChatToFile(userId, message, timestamp) {
   // 새로운 채팅 기록 추가
   chatLogs[userId].push({
     timestamp: timestamp,
-    message: message
+    message: message,
   });
 
   // 변경된 채팅 로그를 파일에 다시 저장
@@ -64,7 +68,7 @@ async function askGPT(question) {
       messages: [
         { role: "system", content: "You are a helpful assistant." },
         // 채팅 내역을 이전 대화로 추가
-        ...chatHistory.map(chat => ({
+        ...chatHistory.map((chat) => ({
           role: "user",
           content: `User(${chat.userId}): ${chat.message}`,
         })),
@@ -81,20 +85,22 @@ async function askGPT(question) {
 
 // 유저가 채팅할 때마다 발생하는 이벤트 (실시간 채팅만 기록)
 client.on("a", (msg) => {
-  const userId = msg.p.id;  // 유저 ID
-  const message = msg.a;    // 채팅 메시지
+  const userId = msg.p.id; // 유저 ID
+  const message = msg.a; // 채팅 메시지
   const timestamp = new Date().toISOString(); // 현재 시간
-  saveChatToFile(userId, message, timestamp);  // 파일 및 메모리에 채팅 기록 저장
+  saveChatToFile(userId, message, timestamp); // 파일 및 메모리에 채팅 기록 저장
 
   // GPT에게 질문하는 경우 채팅에 "/질문"으로 시작하도록 설정
   if (message.startsWith("/질문 ")) {
     const question = message.replace("/질문 ", "");
     askGPT(question).then((gptResponse) => {
       // GPT의 답변을 방에 출력
-      client.sendArray([{
-        m: "a",
-        message: `GPT의 답변: ${gptResponse}`,
-      }]);
+      client.sendArray([
+        {
+          m: "a",
+          message: `GPT의 답변: ${gptResponse}`,
+        },
+      ]);
     });
   }
 });

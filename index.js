@@ -84,6 +84,7 @@ function saveChatToFile(username, message) {
   });
 }
 
+createChannel();
 scheduleChannelCreation();
 
 // 모든 유저의 채팅을 기록

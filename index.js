@@ -1,13 +1,13 @@
 import { Client } from "mpp-client-net";
 import fs from "fs";
 import path from "path";
-import { OpenAIApi } from "openai";
+import OpenAI from "openai";
 
 dotenv.config();
 
 const MPPNET_TOKEN = process.env.MPPNET_TOKEN;
 const OwnerId = process.env.OWNER_ID;
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI();
 
 const client = new Client("wss://mppclone.com", MPPNET_TOKEN);
 

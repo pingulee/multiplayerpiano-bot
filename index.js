@@ -2,16 +2,14 @@ const { Client } = require("mpp-client-net");
 const dotenv = require("dotenv");
 const fs = require("fs");
 const path = require("path");
-const { Configuration, OpenAIApi } = require("openai");
+const { OpenAIApi } = require("openai");
 
 dotenv.config();
 
 // OpenAI API 설정
-const openai = new OpenAIApi(
-  new Configuration({
-    apiKey: process.env.OPENAI_API_KEY, // OpenAI API 키 설정
-  })
-);
+const openai = new OpenAIApi({
+  apiKey: process.env.OPENAI_API_KEY, // OpenAI API 키 설정 (dotenv 파일에서 가져옴)
+});
 
 const MPPNET_TOKEN = process.env.MPPNET_TOKEN;
 const OwnerId = process.env.OWNER_ID;

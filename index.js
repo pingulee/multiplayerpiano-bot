@@ -25,59 +25,52 @@ function createChannel(channelName, settings) {
   console.log(channelName);
 }
 
-// 채팅 내용을 파일에 저장하는 함수
-function saveChatToFile(username, message) {
-  try {
-    const timestamp = new Date();
-    const formattedDate = timestamp.toISOString().split('T')[0]; // 날짜 (YYYY-MM-DD)
-    const formattedTime = timestamp.toTimeString().split(' ')[0]; // 시간 (HH:MM:SS)
+// 채팅을 파일에 저장하는 함수
+function saveChatToFile(userId, message) {
+  const chatLogPath = path.resolve("chatlog.json");
 
-    const chatLog = {
-      date: formattedDate,
-      time: formattedTime,
-      username: username,
-      message: message,
-    };
+  // 현재 날짜와 시간을 가져옴
+  const currentDate = new Date();
+  const timestamp = currentDate.toISOString(); // 날짜와 시간을 ISO 형식으로 저장
 
-    // 파일 경로 지정
-    const filePath = path.join(__dirname, 'chatlog.json');
-    console.log(`파일 경로: ${filePath}`); // 디버그 로그
+  // 새로운 채팅 기록을 JSON 형태로 만듦
+  const newChatLog = {
+    timestamp: timestamp,  // 날짜 및 시간
+    userId: userId,        // 유저 ID
+    message: message       // 대화 내용
+  };
 
-    // 파일이 이미 존재하는지 확인
-    if (fs.existsSync(filePath)) {
-      console.log('기존 파일에 기록을 추가합니다.'); // 디버그 로그
-      // 파일이 존재하면 기존 내용을 읽어서 추가
-      const existingData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-      existingData.push(chatLog);
-      fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2));
-    } else {
-      console.log('새로운 파일을 생성합니다.'); // 디버그 로그
-      // 파일이 없으면 새로 생성
-      fs.writeFileSync(filePath, JSON.stringify([chatLog], null, 2));
-    }
-  } catch (error) {
-    console.error('채팅 기록을 파일에 저장하는 중 에러 발생:', error); // 에러 로그
+  // 기존 채팅 로그 파일이 있으면 불러옴, 없으면 빈 배열 생성
+  let chatLogs = [];
+  if (fs.existsSync(chatLogPath)) {
+    const existingLogs = fs.readFileSync(chatLogPath, "utf-8");
+    chatLogs = JSON.parse(existingLogs);
   }
+
+  // 새로운 기록을 기존 로그에 추가
+  chatLogs.push(newChatLog);
+
+  // 변경된 채팅 로그를 파일에 다시 저장
+  fs.writeFileSync(chatLogPath, JSON.stringify(chatLogs, null, 2), "utf-8");
 }
 
-// 채팅을 받을 때마다 파일에 저장
+// 유저가 채팅할 때마다 발생하는 이벤트
 client.on("a", (msg) => {
-  const username = msg.p.name; // 유저 이름
-  const message = msg.a; // 채팅 메시지
-  console.log(`채팅 수신 - 유저: ${username}, 메시지: ${message}`); // 디버그 로그
-  saveChatToFile(username, message); // 파일에 채팅 기록 저장
+  const userId = msg.p.id;  // 유저 ID
+  const message = msg.a;    // 채팅 메시지
+  saveChatToFile(userId, message);  // 파일에 채팅 기록 저장
 });
 
-// 방 접속 성공 시 처리
+// 클라이언트 접속 후 이름과 색깔 설정 및 왕관 체크
 client.on("hi", () => {
   console.log("방 생성/접속 성공");
   client.setNameAndColor("👁️🐽👁️", "#ff8687");
   client.checkAndTakeCrownUntilSuccess();
 });
 
-// 방 생성 및 스케줄링 시작 (10분마다 새로운 방 생성)
+// 방 생성 및 10분마다 새로 방을 생성
 createChannel("한국방", channelSettings);
 setInterval(() => {
   createChannel("한국방", channelSettings);
   console.log("방 생성 새로고침");
-}, 600000);
+}, 600000); // 10분마다 방 새로 생성

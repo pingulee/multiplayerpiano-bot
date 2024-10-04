@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "body-parser": "^1.20.3",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
+    "express": "^4.21.0",
     "midi-player-js": "^2.0.16",
     "mpp-client-net": "^1.2.3",
     "openai": "^4.65.0"

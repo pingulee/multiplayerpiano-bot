@@ -98,6 +98,7 @@ app.post("/chat", (req, res) => {
   const message = req.body.message;
   if (message.trim()) {
     chat = message; // 입력 받은 메시지를 chat 변수에 저장
+    
     console.log(`웹에서 입력된 메시지: ${message}`);
   }
   res.redirect("/"); // 입력 후 다시 폼으로 리다이렉트
@@ -106,14 +107,11 @@ app.post("/chat", (req, res) => {
 // 일정 간격으로 chat 변수를 확인하고 비어 있지 않으면 채팅 전송
 setInterval(() => {
   if (chat.trim()) {
-    client.sendArray([{ m: "a", message: chat }]); // 채팅 전송
-    console.log(`채팅 전송됨: ${chat}`);
-    chat = ""; // 전송 후 chat 변수를 초기화
+    client.sendArray([{ m: "a", message: chat }]);
+    chat = "";
   }
-}, 1000); // 1초마다 확인
+}, 100);
 
 // 웹 서버 시작
 const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`웹 인터페이스가 http://localhost:${PORT} 에서 실행 중입니다.`);
-});
+app.listen(PORT, '0.0.0.0');

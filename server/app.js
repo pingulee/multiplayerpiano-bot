@@ -60,7 +60,7 @@ async function sendChatToGPT(userId, question) {
     return `사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.`;
   }
 
-  const chatContent = chatLogs.map(log => log.message).join("\n");
+  const chatContent = chatLogs.map((log) => log.message).join("\n");
 
   console.log(`GPT로 보내는 채팅 내역: ${chatContent}`);
   console.log(`질문: ${question}`);
@@ -69,7 +69,10 @@ async function sendChatToGPT(userId, question) {
     model: "gpt-4o-mini",
     messages: [
       { role: "system", content: "You are a helpful assistant." },
-      { role: "user", content: `Chat history: ${chatContent}\nQuestion: ${question}` }
+      {
+        role: "user",
+        content: `Chat history: ${chatContent}\nQuestion: ${question}`,
+      },
     ],
   });
 
@@ -88,15 +91,23 @@ client.on("a", async (msg) => {
 
   // OWNER_ID 사용자가 특정 명령어를 입력했을 때
   if (userId === OWNER_ID && message.startsWith("/")) {
-    const [command, targetUserId, ...questionParts] = message.split(" ");
-    const question = questionParts.join(" ");
+    // 명령어가 슬래시로 시작하는지 확인한 후, 실제 명령어 추출
+    const command = message.substring(1).trim(); // 슬래시를 제거하고 명령어 부분 추출
+    const [targetUserId, ...questionParts] = command.split(" ");
+    const question = questionParts.join(" ").trim();
 
-    // 명령어 형식이 "/{userId} 질문"인지 확인
-    if (command === "/" && targetUserId && question) {
+    if (targetUserId && question) {
+      // GPT로 채팅 내역과 질문을 보내고 응답을 받음
       const response = await sendChatToGPT(targetUserId, question);
       client.sendArray([{ m: "a", message: response }]);
     } else {
-      client.sendArray([{ m: "a", message: "올바른 명령어 형식이 아닙니다. /{사용자ID} {질문} 형식으로 입력해 주세요." }]);
+      client.sendArray([
+        {
+          m: "a",
+          message:
+            "올바른 명령어 형식이 아닙니다. /{사용자ID} {질문} 형식으로 입력해 주세요.",
+        },
+      ]);
     }
   }
 });

@@ -3,9 +3,10 @@ import fs from "fs";
 import path from "path";
 
 const MPPNET_TOKEN = process.env.MPPNET_TOKEN;
-const OwnerId = process.env.OWNER_ID;
 
 const client = new Client("wss://mppclone.com", MPPNET_TOKEN);
+
+let chat = "";
 
 // 방 설정
 const channelSettings = {

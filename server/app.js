@@ -17,7 +17,7 @@ const channelSettings = {
 
 // 채팅을 파일에 저장하는 함수 (유저 ID별로 정리)
 function saveChatToFile(userId, message, timestamp) {
-  const chatLogPath = path.resolve("data/chatlog.json");
+  const chatLogPath = path.resolve("../share/data/chatlog.json");
 
   // 기존 채팅 로그 파일이 있으면 불러옴, 없으면 빈 객체 생성
   let chatLogs = {};

@@ -60,17 +60,18 @@ async function sendChatToGPT(userId, question) {
     return `사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.`;
   }
 
+  // 채팅 내역을 질문에 포함시킴
   const chatContent = chatLogs.map(log => log.message).join("\n");
+  const fullQuestion = `Chat history:\n${chatContent}\n\nBased on this chat history, answer the following question: ${question}`;
 
-  // GPT에게 전송하는 채팅 내역을 채팅창에 출력
-  client.sendArray([{ m: "a", message: `GPT로 보내는 채팅 내역: ${chatContent}` }]);
+  // GPT에게 전송하는 질문 및 내역을 채팅창에 출력
   client.sendArray([{ m: "a", message: `질문: ${question}` }]);
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       { role: "system", content: "You are a helpful assistant." },
-      { role: "user", content: `Chat history: ${chatContent}\nQuestion: ${question}` }
+      { role: "user", content: fullQuestion }
     ],
   });
 

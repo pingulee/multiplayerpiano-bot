@@ -22,6 +22,21 @@ const channelSettings = {
 // 채팅 로그 파일 경로
 const chatLogPath = path.resolve("../share/data/chatlog.json");
 
+// 날짜별로 채팅 내역을 그룹화하는 함수
+function groupChatLogsByDate(chatLogs) {
+  const groupedLogs = {};
+
+  chatLogs.forEach((log) => {
+    const date = log.timestamp.split("T")[0]; // 날짜만 추출 (년-월-일)
+    if (!groupedLogs[date]) {
+      groupedLogs[date] = [];
+    }
+    groupedLogs[date].push(log.message); // 같은 날짜의 메시지끼리 묶음
+  });
+
+  return groupedLogs;
+}
+
 // 채팅을 파일에 저장하는 함수 (유저 ID별로 정리)
 function saveChatToFile(userId, message, timestamp) {
   let chatLogs = {};
@@ -62,7 +77,15 @@ async function sendChatToGPT(userId, question) {
     return `사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.`;
   }
 
-  const chatContent = chatLogs.map((log) => log.message).join("\n");
+  // 날짜별로 채팅 로그 그룹화
+  const groupedLogs = groupChatLogsByDate(chatLogs);
+
+  // 각 날짜별로 채팅 내역을 묶어서 GPT에게 전송할 내용 생성
+  let chatContent = "";
+  for (const date in groupedLogs) {
+    const messages = groupedLogs[date].join("\n");
+    chatContent += `Date: ${date}\n${messages}\n\n`; // 날짜별로 구분하여 추가
+  }
 
   // GPT에게 전송하는 채팅 내역을 채팅창에 출력
   client.sendArray([
@@ -75,7 +98,7 @@ async function sendChatToGPT(userId, question) {
       { role: "system", content: "You are a helpful assistant." },
       {
         role: "user",
-        content: `Chat history: ${chatContent}\nQuestion: ${question}`,
+        content: `Chat history:\n${chatContent}\nQuestion: ${question}`,
       },
     ],
   });

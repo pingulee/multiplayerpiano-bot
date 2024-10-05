@@ -56,26 +56,34 @@ async function sendChatToGPT(userId, question) {
   const chatLogs = getChatLogsByUserId(userId);
 
   if (chatLogs.length === 0) {
-    client.sendArray([{ m: "a", message: `사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.` }]);
+    client.sendArray([
+      { m: "a", message: `사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.` },
+    ]);
     return `사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.`;
   }
 
-  const chatContent = chatLogs.map(log => log.message).join("\n");
+  const chatContent = chatLogs.map((log) => log.message).join("\n");
 
   // GPT에게 전송하는 채팅 내역을 채팅창에 출력
-  client.sendArray([{ m: "a", message: `GPT로 보내는 채팅 내역: ${chatContent}` }]);
-  client.sendArray([{ m: "a", message: `질문: ${question}` }]);
+  client.sendArray([
+    { m: "a", message: `GPT로 보내는 채팅 내역: ${chatContent}` },
+  ]);
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       { role: "system", content: "You are a helpful assistant." },
-      { role: "user", content: `Chat history: ${chatContent}\nQuestion: ${question}` }
+      {
+        role: "user",
+        content: `Chat history: ${chatContent}\nQuestion: ${question}`,
+      },
     ],
   });
 
   const gptResponse = completion.choices[0].message.content;
-  client.sendArray([{ m: "a", message: `GPT 응답: ${gptResponse}` }]);
+  client.sendArray([
+    { m: "a", message: `${userId} ${question}: ${gptResponse}` },
+  ]);
 
   return gptResponse;
 }
@@ -100,7 +108,13 @@ client.on("a", async (msg) => {
       const response = await sendChatToGPT(targetUserId, question);
       client.sendArray([{ m: "a", message: response }]);
     } else {
-      client.sendArray([{ m: "a", message: "올바른 명령어 형식이 아닙니다. /{사용자ID} {질문} 형식으로 입력해 주세요." }]);
+      client.sendArray([
+        {
+          m: "a",
+          message:
+            "올바른 명령어 형식이 아닙니다. /{사용자ID} {질문} 형식으로 입력해 주세요.",
+        },
+      ]);
     }
   }
 });

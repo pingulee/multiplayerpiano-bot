@@ -65,9 +65,9 @@ function createChannel(channelName, settings) {
 }
 
 // 방 생성 및 10분마다 새로 방을 생성
-createChannel("test", channelSettings);
+createChannel("퍼리", channelSettings);
 setInterval(() => {
-  createChannel("test", channelSettings);
+  createChannel("퍼리", channelSettings);
   console.log("방 생성 새로고침");
 }, 600000);
 

@@ -82,10 +82,8 @@ async function sendChatToGPT(userId, question) {
 
   const gptResponse = completion.choices[0].message.content;
   client.sendArray([
-    { m: "a", message: `${userId} ${question}: ${gptResponse}` },
+    { m: "a", message: `'${userId}' ${question}: ${gptResponse}` },
   ]);
-
-  return gptResponse;
 }
 
 // 유저가 채팅할 때마다 발생하는 이벤트 (실시간 채팅만 기록)

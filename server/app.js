@@ -74,6 +74,7 @@ async function sendChatToGPT(userId, question) {
     client.sendArray([
       { m: "a", message: `사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.` },
     ]);
+    return;
   }
 
   // 날짜별로 채팅 로그 그룹화
@@ -86,26 +87,37 @@ async function sendChatToGPT(userId, question) {
     chatContent += `Date: ${date}\n${messages}\n\n`; // 날짜별로 구분하여 추가
   }
 
+  // 디버깅: GPT에게 전송할 질문과 채팅 내역 로그 출력
+  console.log(`질문: ${question}`);
+  console.log(`GPT로 보내는 채팅 내역: ${chatContent}`);
+
   // GPT에게 전송하는 채팅 내역을 채팅창에 출력
   client.sendArray([
     { m: "a", message: `GPT로 보내는 채팅 내역: ${chatContent}` },
   ]);
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: "You are a helpful assistant." },
-      {
-        role: "user",
-        content: `Chat history:\n${chatContent}\nQuestion: ${question}`,
-      },
-    ],
-  });
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a helpful assistant." },
+        {
+          role: "user",
+          content: `Chat history:\n${chatContent}\nQuestion: ${question}`,
+        },
+      ],
+    });
 
-  const gptResponse = completion.choices[0].message.content;
-  client.sendArray([
-    { m: "a", message: `'${userId}' ${question}: ${gptResponse}` },
-  ]);
+    const gptResponse = completion.choices[0].message.content;
+    client.sendArray([
+      { m: "a", message: `'${userId}' ${question}: ${gptResponse}` },
+    ]);
+  } catch (error) {
+    console.error("GPT 요청 오류:", error);
+    client.sendArray([
+      { m: "a", message: "GPT 요청 중 오류가 발생했습니다." },
+    ]);
+  }
 }
 
 // 유저가 채팅할 때마다 발생하는 이벤트 (실시간 채팅만 기록)
@@ -122,6 +134,9 @@ client.on("a", async (msg) => {
     const command = message.substring(1).trim(); // 슬래시를 제거하고 명령어 부분 추출
     const [targetUserId, ...questionParts] = command.split(" ");
     const question = questionParts.join(" ").trim();
+
+    // 디버깅: 명령어와 질문 출력
+    console.log(`명령어: ${command}, 대상: ${targetUserId}, 질문: ${question}`);
 
     if (targetUserId && question) {
       // GPT로 채팅 내역과 질문을 보내고 응답을 받음

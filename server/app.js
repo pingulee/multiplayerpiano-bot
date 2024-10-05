@@ -22,19 +22,16 @@ const channelSettings = {
 // 채팅 로그 파일 경로
 const chatLogPath = path.resolve("../share/data/chatlog.json");
 
-// 날짜와 시간별로 채팅 내역을 그룹화하는 함수
-function groupChatLogsByDateTime(chatLogs) {
+// 날짜별로 채팅 내역을 그룹화하는 함수
+function groupChatLogsByDate(chatLogs) {
   const groupedLogs = {};
 
   chatLogs.forEach((log) => {
-    const [date, time] = log.timestamp.split("T"); // 날짜와 시간을 분리
-    const hour = time.split(":")[0]; // 시간(HH)만 추출
-
-    const dateTimeKey = `${date} ${hour}:00`; // 날짜와 시간을 "YYYY-MM-DD HH:00" 형식으로 묶음
-    if (!groupedLogs[dateTimeKey]) {
-      groupedLogs[dateTimeKey] = [];
+    const date = log.timestamp.split("T")[0]; // 날짜만 추출 (년-월-일)
+    if (!groupedLogs[date]) {
+      groupedLogs[date] = [];
     }
-    groupedLogs[dateTimeKey].push(log.message); // 같은 시간대의 메시지끼리 묶음
+    groupedLogs[date].push(log.message); // 같은 날짜의 메시지끼리 묶음
   });
 
   return groupedLogs;
@@ -80,35 +77,36 @@ async function sendChatToGPT(userId, question) {
     return `사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.`;
   }
 
-  // 날짜와 시간별로 채팅 로그 그룹화
-  const groupedLogs = groupChatLogsByDateTime(chatLogs);
+  // 날짜별로 채팅 로그 그룹화
+  const groupedLogs = groupChatLogsByDate(chatLogs);
 
-  // 각 시간별로 채팅 내역을 묶어서 GPT에게 전송할 내용 생성
-  for (const dateTime in groupedLogs) {
-    const messages = groupedLogs[dateTime].join("\n");
-    const chatContent = `DateTime: ${dateTime}\n${messages}\n`;
-
-    // GPT에게 전송하는 채팅 내역을 채팅창에 출력
-    client.sendArray([
-      { m: "a", message: `GPT로 보내는 채팅 내역: ${chatContent}` },
-    ]);
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "You are a helpful assistant." },
-        {
-          role: "user",
-          content: `Chat history:\n${chatContent}\nQuestion: ${question}`,
-        },
-      ],
-    });
-
-    const gptResponse = completion.choices[0].message.content;
-    client.sendArray([
-      { m: "a", message: `'${userId}' ${question} (${dateTime}): ${gptResponse}` },
-    ]);
+  // 각 날짜별로 채팅 내역을 묶어서 GPT에게 전송할 내용 생성
+  let chatContent = "";
+  for (const date in groupedLogs) {
+    const messages = groupedLogs[date].join("\n");
+    chatContent += `Date: ${date}\n${messages}\n\n`; // 날짜별로 구분하여 추가
   }
+
+  // GPT에게 전송하는 채팅 내역을 채팅창에 출력
+  client.sendArray([
+    { m: "a", message: `GPT로 보내는 채팅 내역: ${chatContent}` },
+  ]);
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      { role: "system", content: "You are a helpful assistant." },
+      {
+        role: "user",
+        content: `Chat history:\n${chatContent}\nQuestion: ${question}`,
+      },
+    ],
+  });
+
+  const gptResponse = completion.choices[0].message.content;
+  client.sendArray([
+    { m: "a", message: `'${userId}' ${question}: ${gptResponse}` },
+  ]);
 }
 
 // 유저가 채팅할 때마다 발생하는 이벤트 (실시간 채팅만 기록)

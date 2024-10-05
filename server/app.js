@@ -8,6 +8,7 @@ const OWNER_ID = process.env.OWNER_ID;
 
 const client = new Client("wss://mppclone.com", MPPNET_TOKEN);
 const openai = new OpenAI();
+
 let chat = "";
 
 // 방 설정
@@ -20,6 +21,26 @@ const channelSettings = {
 
 // 채팅 로그 파일 경로
 const chatLogPath = path.resolve("../share/data/chatlog.json");
+
+// 채팅을 파일에 저장하는 함수 (유저 ID별로 정리)
+function saveChatToFile(userId, message, timestamp) {
+  let chatLogs = {};
+  if (fs.existsSync(chatLogPath)) {
+    const existingLogs = fs.readFileSync(chatLogPath, "utf-8");
+    chatLogs = JSON.parse(existingLogs);
+  }
+
+  if (!chatLogs[userId]) {
+    chatLogs[userId] = [];
+  }
+
+  chatLogs[userId].push({
+    timestamp: timestamp,
+    message: message,
+  });
+
+  fs.writeFileSync(chatLogPath, JSON.stringify(chatLogs, null, 2), "utf-8");
+}
 
 // 채팅 로그 조회 함수
 function getChatLogsByUserId(userId) {
@@ -35,11 +56,14 @@ async function sendChatToGPT(userId, question) {
   const chatLogs = getChatLogsByUserId(userId);
 
   if (chatLogs.length === 0) {
+    console.log(`사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.`);
     return `사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.`;
   }
 
-  // 채팅 내역을 GPT에게 제출할 형식으로 변환
-  const chatContent = chatLogs.map((log) => log.message).join("\n");
+  const chatContent = chatLogs.map(log => log.message).join("\n");
+
+  console.log(`GPT로 보내는 채팅 내역: ${chatContent}`);
+  console.log(`질문: ${question}`);
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -49,51 +73,30 @@ async function sendChatToGPT(userId, question) {
     ],
   });
 
+  console.log(`GPT 응답: ${completion.choices[0].message.content}`);
+
   return completion.choices[0].message.content;
 }
 
-// 채팅을 파일에 저장하는 함수 (유저 ID별로 정리)
-function saveChatToFile(userId, message, timestamp) {
-  const chatLogPath = path.resolve("../share/data/chatlog.json");
-
-  // 기존 채팅 로그 파일이 있으면 불러옴, 없으면 빈 객체 생성
-  let chatLogs = {};
-  if (fs.existsSync(chatLogPath)) {
-    const existingLogs = fs.readFileSync(chatLogPath, "utf-8");
-    chatLogs = JSON.parse(existingLogs);
-  }
-
-  // 유저 ID별로 기록 저장
-  if (!chatLogs[userId]) {
-    chatLogs[userId] = [];
-  }
-
-  // 새로운 채팅 기록 추가
-  chatLogs[userId].push({
-    timestamp: timestamp,
-    message: message,
-  });
-
-  // 변경된 채팅 로그를 파일에 다시 저장
-  fs.writeFileSync(chatLogPath, JSON.stringify(chatLogs, null, 2), "utf-8");
-}
-
-// 유저가 채팅할 때마다 발생하는 이벤트 (특정 명령어 처리 및 실시간 채팅 기록 저장)
+// 유저가 채팅할 때마다 발생하는 이벤트 (실시간 채팅만 기록)
 client.on("a", async (msg) => {
-  const userId = msg.p.id; // 유저 ID
-  const message = msg.a; // 채팅 메시지
-  const timestamp = new Date().toISOString(); // 현재 시간
+  const userId = msg.p.id;
+  const message = msg.a;
+  const timestamp = new Date().toISOString();
 
-  saveChatToFile(userId, message, timestamp); // 파일에 채팅 기록 저장
+  saveChatToFile(userId, message, timestamp);
 
   // OWNER_ID 사용자가 특정 명령어를 입력했을 때
   if (userId === OWNER_ID && message.startsWith("/")) {
     const [command, targetUserId, ...questionParts] = message.split(" ");
     const question = questionParts.join(" ");
 
-    if (command === `/${targetUserId}`) {
+    // 명령어 형식이 "/{userId} 질문"인지 확인
+    if (command === "/" && targetUserId && question) {
       const response = await sendChatToGPT(targetUserId, question);
-      client.sendArray([{ m: "a", message: response }]); // GPT 응답을 채팅으로 전송
+      client.sendArray([{ m: "a", message: response }]);
+    } else {
+      client.sendArray([{ m: "a", message: "올바른 명령어 형식이 아닙니다. /{사용자ID} {질문} 형식으로 입력해 주세요." }]);
     }
   }
 });
@@ -109,7 +112,7 @@ client.on("hi", () => {
 function createChannel(channelName, settings) {
   client.start();
   client.setChannel(channelName, settings);
-  console.log(channelName);
+  console.log(`${channelName} 채널로 접속`);
 }
 
 // 방 생성 및 10분마다 새로 방을 생성

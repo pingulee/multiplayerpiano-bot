@@ -74,7 +74,6 @@ async function sendChatToGPT(userId, question) {
     client.sendArray([
       { m: "a", message: `사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.` },
     ]);
-    return `사용자 ID: ${userId}에 대한 채팅 기록이 없습니다.`;
   }
 
   // 날짜별로 채팅 로그 그룹화

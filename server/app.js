@@ -98,7 +98,7 @@ async function sendChatToGPT(userId, question) {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-3.5-turbo",
       messages: [
         { role: "system", content: "You are a helpful assistant." },
         {
@@ -114,9 +114,7 @@ async function sendChatToGPT(userId, question) {
     ]);
   } catch (error) {
     console.error("GPT 요청 오류:", error);
-    client.sendArray([
-      { m: "a", message: "GPT 요청 중 오류가 발생했습니다." },
-    ]);
+    client.sendArray([{ m: "a", message: "GPT 요청 중 오류가 발생했습니다." }]);
   }
 }
 

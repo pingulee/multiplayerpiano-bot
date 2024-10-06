@@ -109,9 +109,7 @@ async function sendChatToGPT(userId, question) {
     });
 
     const gptResponse = completion.choices[0].message.content;
-    client.sendArray([
-      { m: "a", message: `'${userId}' ${question}: ${gptResponse}` },
-    ]);
+    client.sendArray([{ m: "a", message: "${gptResponse}" }]);
   } catch (error) {
     console.error("GPT 요청 오류:", error);
     client.sendArray([{ m: "a", message: "GPT 요청 중 오류가 발생했습니다." }]);
